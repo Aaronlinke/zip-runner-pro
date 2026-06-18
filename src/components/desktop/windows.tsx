@@ -20,7 +20,7 @@ export function HtmlWindow({ files, entry }: { files: ZipFile[]; entry: string }
     const html = buildHtmlBundle(files, entry);
     return URL.createObjectURL(new Blob([html], { type: "text/html" }));
   }, [files, entry]);
-  useEffect(() => () => url && URL.revokeObjectURL(url), [url]);
+  useEffect(() => { return () => { if (url) URL.revokeObjectURL(url); }; }, [url]);
   return (
     <iframe
       title="App"
@@ -334,7 +334,7 @@ function FilePreview({ file }: { file: ZipFile }) {
     if (typeof window === "undefined") return "";
     return URL.createObjectURL(new Blob([file.data as BlobPart], { type: mime }));
   }, [file, mime]);
-  useEffect(() => () => url && URL.revokeObjectURL(url), [url]);
+  useEffect(() => { return () => { if (url) URL.revokeObjectURL(url); }; }, [url]);
 
   const dl = (
     <a
