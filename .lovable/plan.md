@@ -1,60 +1,56 @@
+# ZIP-Runner als macOS-Style Desktop
 
-# Zippy Executor — ZIP rein, läuft
+## Was du bekommst
 
-## Ehrliche Vorab-Info (wichtig!)
+Eine Browser-Oberfläche, die aussieht und sich anfühlt wie ein echtes Betriebssystem:
 
-Ein Browser kann **nicht alles** ausführen. Was geht und was nicht:
+- **Menüleiste oben** (wie macOS): Logo, App-Name, Uhrzeit, Status der Engines
+- **Desktop-Hintergrund** mit weichem Verlauf (`#f5f5f7` → weiß)
+- **Drop-Zone in der Mitte**: ZIP irgendwo aufs Fenster ziehen → wird automatisch "geöffnet"
+- **Dock unten**: Icons für die laufenden Engines (Python, SQLite, C/Wasm, JS) – leuchten wenn aktiv
+- **Fenster-System**: Jede gestartete ZIP öffnet sich als eigenes Fenster mit Ampel-Buttons (rot/gelb/grün), verschiebbar, minimierbar, maximierbar
+- **Vernünftig benutzbar**: Wenn die ZIP eine Web-App ist, läuft sie direkt im Fenster. Wenn es Python ist, gibt's eine echte Konsole mit Eingabezeile. CSV/JSON → Tabelle. Bild → Viewer. Alles ohne dass du wissen musst, was drin ist.
 
-| Inhalt der ZIP | Geht im Browser? |
-|---|---|
-| HTML / CSS / JavaScript Web-App | **Ja**, läuft direkt — wie eine echte Webseite |
-| Python-Skripte (.py) | **Ja**, über Pyodide (Python läuft im Browser als WebAssembly) |
-| C / C++ Quellcode | Nur wenn als WebAssembly kompiliert — Rohcode nein |
-| Java (.jar, .class) | Nein (kein Java im Browser) |
-| .exe (Windows-Programm) | **Nein**, technisch unmöglich im Browser |
-| .app (macOS-Programm) | **Nein**, technisch unmöglich im Browser |
-| CSV / JSON / Bilder | Ja, werden angezeigt/visualisiert |
+## Engines, die im Hintergrund mitlaufen
 
-Zu deinem Punkt „Simulation = echtes Leben": Ja — wenn dein Python-Rechensystem oder deine HTML-App im Browser läuft und das richtige Ergebnis liefert, ist die Logik korrekt. Der **Code selbst** ist gleich, nur die Umgebung ist anders. Eine Formel rechnet im Browser exakt dasselbe wie auf einem Server.
+Alle laden lazy beim ersten Bedarf, Status sichtbar im Dock:
 
-Für `.exe`/`.app` müsste später eine **Desktop-Version** dazukommen (separates Projekt). Das Browser-Tool deckt aber 80% deiner Fälle ab (HTML, Python, Daten).
+| Engine | Wofür | Wie |
+|---|---|---|
+| **Python** (Pyodide) | `.py` Skripte inkl. numpy, pandas, matplotlib | schon drin, ausbauen |
+| **SQLite** (sql.js) | `.db`, `.sqlite` Dateien öffnen + abfragen | sql.js via CDN |
+| **JavaScript/TypeScript** | `.js`, `.ts` Skripte in sicherer Sandbox laufen lassen | QuickJS-Wasm oder iframe-Worker |
+| **Lua** (wasmoon) | `.lua` Skripte | wasmoon via CDN |
+| **C/C++** (Wasm) | vorkompilierte `.wasm` direkt starten; rohen `.c` Quellcode-Hinweis | WebAssembly nativ |
+| **HTML/CSS/JS Web-App** | komplette Webseiten in ZIPs | schon drin (Blob-URLs + iframe) |
+| **Daten** (CSV/JSON/Bilder/PDF/Audio/Video) | Anzeigen in passendem Viewer | native + papaparse |
+| **Markdown/Text** | Lesen mit Syntax-Highlight | marked + shiki |
 
-## Was ich baue
+Java (.jar) und echte `.exe`/`.app` gehen im Browser physikalisch nicht – dafür kommt klar lesbar ein „Dafür brauchst du die Desktop-Version"-Hinweis im Fenster, kein stiller Fehler.
 
-Eine einzige Seite (`/`) mit dieser User-Flow:
+## Wie sich's anfühlt
 
-1. **Drop-Zone**: ZIP per Drag&Drop oder Klick hochladen
-2. **Auto-Erkennung**: Tool entpackt die ZIP im Browser (mit `fflate`) und schaut rein:
-   - Findet es `index.html` → startet die Web-App in einem isolierten iframe
-   - Findet es `.py`-Dateien mit einer `main.py` oder einzelnem Skript → führt es mit Pyodide aus, zeigt Output
-   - Findet es nur Daten (CSV/JSON/Bilder) → zeigt Vorschau/Tabelle
-   - Findet es `.exe`/`.app`/`.jar` → erklärt freundlich, dass das nicht im Browser läuft, bietet Datei-Download an
-3. **Ausgabe-Bereich**: Live-Ergebnis (iframe, Konsole, Tabelle)
-4. **Dateibaum**: Übersicht aller Dateien in der ZIP mit Größe, klickbar für Vorschau
+- Beim Drop fliegt das ZIP-Icon zum Dock, "entpackt" sich mit kurzer Animation, dann ploppt das App-Fenster auf
+- Mehrere ZIPs gleichzeitig offen → mehrere Fenster, jedes unabhängig
+- Fenster-Chrome: Frosted-Glass (`backdrop-blur`), abgerundete Ecken, weiche Schatten
+- SF-Pro-ähnliche Systemschrift (Inter als Fallback)
+- Akzentfarbe `#0071e3` (macOS-Blau), Text `#1d1d1f`
+- Keyboard: ⌘W schließt Fenster, ⌘M minimiert
 
-Alles lokal im Browser — deine ZIPs werden **nicht** hochgeladen.
+## Technische Punkte (nur für Neugierige)
 
-## Technische Details
+- **Kein Speichern**: Jede Session frisch, wie gewünscht
+- **Engines lazy laden**: Erst beim ersten ZIP der entsprechenden Art, damit der Start schnell bleibt
+- **Web Worker** für Python/SQL, damit die UI nicht einfriert
+- **Iframe-Sandbox** mit strikten Permissions für Web-Apps – Sicherheit
+- Neue Dateien: `src/components/desktop/{MenuBar,Dock,Window,DropZone}.tsx`, `src/lib/engines/{sqlite,lua,js-sandbox}.ts`, `src/lib/window-manager.ts` (Zustand für offene Fenster)
+- `src/routes/index.tsx` wird zur Desktop-Shell umgebaut
+- Pakete: `fflate` (da), `sql.js`, `wasmoon`, `papaparse`, `marked`, `zustand` für Fenster-State
 
-- **ZIP entpacken**: `fflate` (klein, schnell, läuft im Browser)
-- **Python ausführen**: `pyodide` von CDN — lädt beim ersten Python-ZIP nach (~10MB einmalig)
-- **Web-Apps**: `Blob`-URLs in sandboxed `<iframe>` mit `srcdoc`/`src` — Pfade zu CSS/JS/Bildern werden umgeschrieben, damit sie aus der ZIP statt vom Server kommen
-- **UI**: TanStack Start (vorhanden), shadcn-Komponenten, Tailwind
-- **Sicherheit**: iframe sandbox-Attribute begrenzen Zugriff; alles client-only
+## Was ich NICHT mache
 
-## Dateien
+- Keine echten `.exe`/`.app`/`.jar` ausführen (geht im Browser nicht)
+- Kein dauerhaftes Speichern von ZIPs (du hast „jedes Mal neu" gewählt)
+- Keine Backend/Server-Logik – alles läuft lokal in deinem Browser
 
-- `src/routes/index.tsx` — Hauptseite mit Drop-Zone, Dateibaum, Ausgabe-Panels
-- `src/lib/zip-runner.ts` — entpackt ZIP, erkennt Typ
-- `src/lib/runners/html-runner.tsx` — startet HTML-App im iframe (Pfad-Rewriting)
-- `src/lib/runners/python-runner.tsx` — lädt Pyodide, führt .py aus, streamt stdout
-- `src/lib/runners/data-viewer.tsx` — CSV/JSON/Bild-Vorschau
-- `src/components/file-tree.tsx` — Datei-Übersicht
-- `bun add fflate` — ZIP-Bibliothek
-
-## Was später möglich wäre (nicht in diesem Schritt)
-
-- Desktop-Version (Electron), die wirklich `.exe`/`.app`/Skripte am System ausführen kann — das ist ein eigener Build und ein separates Sicherheitsthema
-- Mehr Python-Pakete (numpy, pandas etc. — Pyodide unterstützt vieles, aber nicht alles)
-
-Sag Bescheid, ob ich so starten soll, oder ob dir der Desktop-Weg lieber ist (dann müssten wir das anders aufziehen).
+Sag "Los" und ich baue das.
