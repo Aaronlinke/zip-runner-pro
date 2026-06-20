@@ -32,15 +32,10 @@ export function Dock({ onAdd }: { onAdd: () => void }) {
   const toggleMin = useWindows((s) => s.toggleMin);
 
   return (
-    <div className="pointer-events-none fixed right-0 bottom-3 left-0 z-[9998] flex justify-center">
-      <div className="pointer-events-auto flex items-end gap-2 rounded-2xl border border-white/40 bg-white/50 px-3 py-2 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.3)] backdrop-blur-2xl">
-        <DockItem
-          label="Neue App"
-          tint="from-sky-400 to-blue-600"
-          Icon={Plus}
-          onClick={onAdd}
-        />
-        {windows.length > 0 && <div className="mx-1 h-12 w-px self-center bg-black/10" />}
+    <div className="pointer-events-none fixed right-0 bottom-2 left-0 z-[9998] flex justify-center px-2 sm:bottom-3">
+      <div className="pointer-events-auto flex max-w-full items-end gap-2 overflow-x-auto rounded-2xl border border-white/40 bg-white/60 px-2 py-1.5 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.3)] backdrop-blur-2xl sm:px-3 sm:py-2">
+        <DockItem label="Neue App" tint="from-sky-400 to-blue-600" Icon={Plus} onClick={onAdd} />
+        {windows.length > 0 && <div className="mx-1 h-10 w-px shrink-0 self-center bg-black/10 sm:h-12" />}
         {windows.map((w) => {
           const I = ICON[w.kind];
           return (
@@ -76,24 +71,18 @@ function DockItem({
   onClick: () => void;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className="group relative flex flex-col items-center"
-      title={label}
-    >
-      <span className="pointer-events-none absolute -top-8 rounded-md bg-black/80 px-2 py-0.5 text-[11px] whitespace-nowrap text-white opacity-0 transition group-hover:opacity-100">
+    <button onClick={onClick} className="group relative flex shrink-0 flex-col items-center" title={label}>
+      <span className="pointer-events-none absolute -top-8 hidden rounded-md bg-black/80 px-2 py-0.5 text-[11px] whitespace-nowrap text-white opacity-0 transition group-hover:opacity-100 sm:block">
         {label}
       </span>
       <span
-        className={`grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br ${tint} text-white shadow-md transition-transform duration-150 group-hover:-translate-y-1 group-hover:scale-110 ${
+        className={`grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br sm:h-12 sm:w-12 ${tint} text-white shadow-md transition-transform duration-150 group-hover:-translate-y-1 group-hover:scale-110 ${
           minimized ? "opacity-60" : ""
         }`}
       >
-        <Icon className="h-6 w-6" />
+        <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
       </span>
-      <span
-        className={`mt-0.5 h-1 w-1 rounded-full ${active ? "bg-zinc-700" : "bg-transparent"}`}
-      />
+      <span className={`mt-0.5 h-1 w-1 rounded-full ${active ? "bg-zinc-700" : "bg-transparent"}`} />
     </button>
   );
 }
