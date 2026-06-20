@@ -1,5 +1,5 @@
 import { useWindows } from "@/lib/window-manager";
-import { FileArchive, Globe, FileCode2, Database, Code2, Boxes, FolderOpen, AlertTriangle, Plus } from "lucide-react";
+import { Globe, FileCode2, Database, Code2, Boxes, FolderOpen, AlertTriangle, Plus, Sparkles } from "lucide-react";
 import type { AppKind } from "@/lib/window-manager";
 
 const ICON: Record<AppKind, React.ComponentType<{ className?: string }>> = {
@@ -11,6 +11,7 @@ const ICON: Record<AppKind, React.ComponentType<{ className?: string }>> = {
   wasm: Boxes,
   data: FolderOpen,
   files: FolderOpen,
+  "ai-translated": Sparkles,
   unsupported: AlertTriangle,
 };
 
@@ -23,6 +24,7 @@ const TINT: Record<AppKind, string> = {
   wasm: "from-violet-400 to-violet-600",
   data: "from-slate-400 to-slate-600",
   files: "from-slate-400 to-slate-600",
+  "ai-translated": "from-fuchsia-400 to-violet-600",
   unsupported: "from-rose-400 to-rose-600",
 };
 

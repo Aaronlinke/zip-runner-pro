@@ -10,6 +10,7 @@ export type AppKind =
   | "wasm"
   | "data"
   | "files"
+  | "ai-translated"
   | "unsupported";
 
 export type WinState = {
