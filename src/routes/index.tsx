@@ -17,6 +17,7 @@ import {
   FilesWindow,
   UnsupportedWindow,
 } from "@/components/desktop/windows";
+import { AiAppWindow } from "@/components/desktop/AiAppWindow";
 import { AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -51,9 +52,9 @@ function Desktop() {
           kind: launch.kind,
           files,
           entry: launch.entry,
-          payload: launch,
-          w: launch.kind === "html" ? 960 : launch.kind === "sqlite" ? 900 : 760,
-          h: launch.kind === "html" ? 640 : 540,
+          payload: { ...launch, zipName: file.name },
+          w: launch.kind === "html" || launch.kind === "ai-translated" ? 960 : launch.kind === "sqlite" ? 900 : 760,
+          h: launch.kind === "html" || launch.kind === "ai-translated" ? 640 : 540,
         });
       } catch (e: any) {
         setError("ZIP konnte nicht gelesen werden: " + (e?.message ?? String(e)));
@@ -115,6 +116,9 @@ function Desktop() {
             {w.kind === "javascript" && w.entry && <JsWindow files={w.files} entry={w.entry} />}
             {w.kind === "wasm" && w.entry && <WasmWindow files={w.files} entry={w.entry} />}
             {(w.kind === "files" || w.kind === "data") && <FilesWindow files={w.files} />}
+            {w.kind === "ai-translated" && (
+              <AiAppWindow files={w.files} zipName={w.payload?.zipName ?? w.title} />
+            )}
             {w.kind === "unsupported" && (
               <UnsupportedWindow
                 reason={w.payload?.reason ?? ""}
