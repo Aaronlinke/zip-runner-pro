@@ -78,19 +78,19 @@ function Desktop() {
       <div className="absolute inset-0 top-7 bottom-0">
         {/* Welcome / drop zone in center when no windows */}
         {windows.length === 0 && (
-          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-6 px-6 text-center">
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-5 px-4 pb-24 text-center sm:gap-6 sm:px-6">
             <div className="pointer-events-auto">
-              <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
+              <h1 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
                 Willkommen bei <span className="text-[#0071e3]">ZippyOS</span>
               </h1>
-              <p className="mt-2 text-sm text-zinc-600">
-                Zieh eine ZIP irgendwo hierher. Was drin ist, läuft.
+              <p className="mt-2 text-xs text-zinc-600 sm:text-sm">
+                ZIP rein — die App läuft. Direkt im Browser, auch am Handy.
               </p>
             </div>
             <DropZone onFile={handleFile} />
-            <div className="pointer-events-none flex flex-wrap justify-center gap-2 text-[11px] text-zinc-500">
-              {["HTML/JS Web-Apps", "Python", "SQLite", "Lua", "JavaScript", "WebAssembly", "CSV/JSON/Bilder"].map((t) => (
-                <span key={t} className="rounded-full border border-black/5 bg-white/70 px-2.5 py-1 backdrop-blur">
+            <div className="pointer-events-none flex max-w-md flex-wrap justify-center gap-1.5 text-[10px] text-zinc-500 sm:text-[11px]">
+              {["HTML/JS", "Python", "SQLite", "Lua", "JavaScript", "Wasm", "CSV/JSON/Bilder"].map((t) => (
+                <span key={t} className="rounded-full border border-black/5 bg-white/70 px-2 py-1 backdrop-blur">
                   {t}
                 </span>
               ))}
