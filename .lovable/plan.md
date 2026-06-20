@@ -1,56 +1,78 @@
-# ZIP-Runner als macOS-Style Desktop
+# Ziel
 
-## Was du bekommst
+ZIP rein → sofort eine **fertige, interaktive Oberfläche**, die genau das macht, was das Programm in der ZIP tun würde — egal ob `.exe`, `.py`, `.c`, `.jar` oder Web-App. Wenn wir es nicht direkt ausführen können, **bauen wir es mit KI nach** und zeigen die echte Funktion, nicht nur den Code.
 
-Eine Browser-Oberfläche, die aussieht und sich anfühlt wie ein echtes Betriebssystem:
+## Wie das funktioniert (3 Stufen, automatisch gewählt)
 
-- **Menüleiste oben** (wie macOS): Logo, App-Name, Uhrzeit, Status der Engines
-- **Desktop-Hintergrund** mit weichem Verlauf (`#f5f5f7` → weiß)
-- **Drop-Zone in der Mitte**: ZIP irgendwo aufs Fenster ziehen → wird automatisch "geöffnet"
-- **Dock unten**: Icons für die laufenden Engines (Python, SQLite, C/Wasm, JS) – leuchten wenn aktiv
-- **Fenster-System**: Jede gestartete ZIP öffnet sich als eigenes Fenster mit Ampel-Buttons (rot/gelb/grün), verschiebbar, minimierbar, maximierbar
-- **Vernünftig benutzbar**: Wenn die ZIP eine Web-App ist, läuft sie direkt im Fenster. Wenn es Python ist, gibt's eine echte Konsole mit Eingabezeile. CSV/JSON → Tabelle. Bild → Viewer. Alles ohne dass du wissen musst, was drin ist.
+```text
+ZIP rein
+   │
+   ▼
+┌──────────────────────────────────┐
+│ 1. Direkt ausführen (wenn geht)  │  HTML/JS, Python, Lua, SQLite, Wasm
+└──────────────────────────────────┘
+   │ geht nicht (z.B. .exe, .c, .jar)
+   ▼
+┌──────────────────────────────────┐
+│ 2. KI liest Quellcode + baut UI  │  Lovable AI generiert React-Komponente
+│    1:1 nach (oder besser)         │  die dasselbe macht
+└──────────────────────────────────┘
+   │ kein Quellcode da (nur .exe)
+   ▼
+┌──────────────────────────────────┐
+│ 3. KI rät aus Name/Strings/Icons │  Erklärung + nachgebaute Demo-Oberfläche
+│    + erklärt was es vermutlich tut│
+└──────────────────────────────────┘
+```
 
-## Engines, die im Hintergrund mitlaufen
+## Was der User sieht
 
-Alle laden lazy beim ersten Bedarf, Status sichtbar im Dock:
+Beim Drop einer ZIP öffnet sich **ein Fenster** mit Tabs:
 
-| Engine | Wofür | Wie |
-|---|---|---|
-| **Python** (Pyodide) | `.py` Skripte inkl. numpy, pandas, matplotlib | schon drin, ausbauen |
-| **SQLite** (sql.js) | `.db`, `.sqlite` Dateien öffnen + abfragen | sql.js via CDN |
-| **JavaScript/TypeScript** | `.js`, `.ts` Skripte in sicherer Sandbox laufen lassen | QuickJS-Wasm oder iframe-Worker |
-| **Lua** (wasmoon) | `.lua` Skripte | wasmoon via CDN |
-| **C/C++** (Wasm) | vorkompilierte `.wasm` direkt starten; rohen `.c` Quellcode-Hinweis | WebAssembly nativ |
-| **HTML/CSS/JS Web-App** | komplette Webseiten in ZIPs | schon drin (Blob-URLs + iframe) |
-| **Daten** (CSV/JSON/Bilder/PDF/Audio/Video) | Anzeigen in passendem Viewer | native + papaparse |
-| **Markdown/Text** | Lesen mit Syntax-Highlight | marked + shiki |
+1. **App** — die laufende Oberfläche (echt oder KI-nachgebaut)
+2. **Was macht das?** — KI-Erklärung in einfachen Worten
+3. **Code** — Originaldateien zum Durchstöbern
+4. **KI-Chat** — „Mach den Button blau", „Erklär mir Zeile 42", „Bau einen Dark-Mode rein"
 
-Java (.jar) und echte `.exe`/`.app` gehen im Browser physikalisch nicht – dafür kommt klar lesbar ein „Dafür brauchst du die Desktop-Version"-Hinweis im Fenster, kein stiller Fehler.
+Bei der KI-nachgebauten Variante steht oben ein dezenter Hinweis: *„Nachgebaut aus dem Quellcode — kann an Details abweichen"*.
 
-## Wie sich's anfühlt
+## Voraussetzung
 
-- Beim Drop fliegt das ZIP-Icon zum Dock, "entpackt" sich mit kurzer Animation, dann ploppt das App-Fenster auf
-- Mehrere ZIPs gleichzeitig offen → mehrere Fenster, jedes unabhängig
-- Fenster-Chrome: Frosted-Glass (`backdrop-blur`), abgerundete Ecken, weiche Schatten
-- SF-Pro-ähnliche Systemschrift (Inter als Fallback)
-- Akzentfarbe `#0071e3` (macOS-Blau), Text `#1d1d1f`
-- Keyboard: ⌘W schließt Fenster, ⌘M minimiert
+**Lovable Cloud aktivieren** — wir brauchen den AI-Gateway, damit die KI-Übersetzung läuft. Das ist gratis im kostenlosen Kontingent. Kein Account-Setup, läuft sofort.
 
-## Technische Punkte (nur für Neugierige)
+## Technische Details
 
-- **Kein Speichern**: Jede Session frisch, wie gewünscht
-- **Engines lazy laden**: Erst beim ersten ZIP der entsprechenden Art, damit der Start schnell bleibt
-- **Web Worker** für Python/SQL, damit die UI nicht einfriert
-- **Iframe-Sandbox** mit strikten Permissions für Web-Apps – Sicherheit
-- Neue Dateien: `src/components/desktop/{MenuBar,Dock,Window,DropZone}.tsx`, `src/lib/engines/{sqlite,lua,js-sandbox}.ts`, `src/lib/window-manager.ts` (Zustand für offene Fenster)
-- `src/routes/index.tsx` wird zur Desktop-Shell umgebaut
-- Pakete: `fflate` (da), `sql.js`, `wasmoon`, `papaparse`, `marked`, `zustand` für Fenster-State
+### Neue Dateien
+- `src/lib/ai/translate-zip.ts` — schickt ZIP-Inhalte an Lovable AI, bekommt fertige React-Komponente als String zurück
+- `src/lib/ai/explain-zip.ts` — generiert die „Was macht das?"-Erklärung
+- `src/lib/ai/sandbox-runner.ts` — führt den generierten React-Code sicher im iframe aus (Babel-Standalone für JSX im Browser)
+- `src/components/desktop/AppWindow.tsx` — neuer Tab-Container (App / Erklärung / Code / Chat)
+- `src/components/desktop/AiChat.tsx` — Chat-Panel mit Streaming
+- `src/routes/api/public/ai-translate.ts` — Server-Route, ruft Lovable AI auf (Gemini 2.5 Flash, gratis bis 2026-10-13)
 
-## Was ich NICHT mache
+### Launcher-Erweiterung
+`src/lib/launcher.ts` bekommt einen neuen Pfad: wenn Datei-Endung in `["exe","app","jar","c","cpp","rs","go","cs","swift","kt"]` ODER nichts direkt ausführbar ist → `kind: "ai-translated"`.
 
-- Keine echten `.exe`/`.app`/`.jar` ausführen (geht im Browser nicht)
-- Kein dauerhaftes Speichern von ZIPs (du hast „jedes Mal neu" gewählt)
-- Keine Backend/Server-Logik – alles läuft lokal in deinem Browser
+### Modell-Auswahl
+- **Standard:** `google/gemini-2.5-flash` (gratis, schnell, gut genug für UI-Nachbau)
+- **Bei großen Codebases:** `google/gemini-2.5-pro` (Premium-Modell für komplexere Logik)
 
-Sag "Los" und ich baue das.
+### Sandbox
+Generierter Code läuft in einem `<iframe sandbox="allow-scripts">` mit React + Tailwind via CDN — kein Zugriff auf das Hauptfenster, sicher gegen Schadcode aus fremden ZIPs.
+
+### Was bleibt unverändert
+- Mobile-Layout, macOS-Look, Fenster-System, Dock, alle bestehenden Engines (Python/SQLite/Lua/Wasm/HTML) — alles bleibt. Der KI-Pfad kommt **zusätzlich** für die Fälle, die vorher als „unsupported" gelandet sind.
+
+## Was wir nicht versprechen können
+
+- Eine echte `.exe` läuft nicht im Browser (technisch unmöglich ohne den Original-Compiler) — wir bauen die Funktion mit KI nach. Bei einfachen Tools (Taschenrechner, Texteditor, kleine Spiele) wird das praktisch identisch. Bei komplexer Software (Photoshop) eher eine Demo der Hauptfunktion + ehrliche Erklärung.
+- Erste KI-Übersetzung dauert ~5-15 Sekunden, danach gecacht.
+
+## Reihenfolge der Umsetzung
+
+1. Lovable Cloud aktivieren
+2. AI-Gateway-Server-Route + Translate/Explain-Funktionen
+3. Sandbox-Runner für generierten React-Code
+4. AppWindow mit Tabs einbauen
+5. Launcher umstellen — alles Unbekannte geht zur KI
+6. Auf Handy testen
