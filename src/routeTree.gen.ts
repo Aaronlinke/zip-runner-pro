@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiAiTranslateRouteImport } from './routes/api/ai-translate'
 import { Route as ApiAiChatRouteImport } from './routes/api/ai-chat'
 
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,36 +37,47 @@ const ApiAiChatRoute = ApiAiChatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/api/ai-chat': typeof ApiAiChatRoute
   '/api/ai-translate': typeof ApiAiTranslateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/api/ai-chat': typeof ApiAiChatRoute
   '/api/ai-translate': typeof ApiAiTranslateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/api/ai-chat': typeof ApiAiChatRoute
   '/api/ai-translate': typeof ApiAiTranslateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/ai-chat' | '/api/ai-translate'
+  fullPaths: '/' | '/how-it-works' | '/api/ai-chat' | '/api/ai-translate'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/ai-chat' | '/api/ai-translate'
-  id: '__root__' | '/' | '/api/ai-chat' | '/api/ai-translate'
+  to: '/' | '/how-it-works' | '/api/ai-chat' | '/api/ai-translate'
+  id: '__root__' | '/' | '/how-it-works' | '/api/ai-chat' | '/api/ai-translate'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   ApiAiChatRoute: typeof ApiAiChatRoute
   ApiAiTranslateRoute: typeof ApiAiTranslateRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HowItWorksRoute: HowItWorksRoute,
   ApiAiChatRoute: ApiAiChatRoute,
   ApiAiTranslateRoute: ApiAiTranslateRoute,
 }
