@@ -96,6 +96,12 @@ function Desktop() {
                 </span>
               ))}
             </div>
+            <Link
+              to="/how-it-works"
+              className="pointer-events-auto mt-1 text-[11px] text-zinc-500 underline decoration-dotted underline-offset-4 hover:text-[#0071e3] sm:text-xs"
+            >
+              Wie das funktioniert — live testen ↗
+            </Link>
           </div>
         )}
 
