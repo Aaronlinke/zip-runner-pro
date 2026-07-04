@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { readZip } from "@/lib/zip-runner";
 import { detectLaunch } from "@/lib/launcher";
