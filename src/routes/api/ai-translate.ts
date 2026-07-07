@@ -96,9 +96,19 @@ Baue jetzt die HTML-Seite, die diese Anwendung darstellt.`;
           });
         } catch (e: any) {
           const msg = e?.message ?? String(e);
-          const status =
-            /rate/i.test(msg) ? 429 : /credit|402/i.test(msg) ? 402 : 500;
-          return Response.json({ error: msg }, { status });
+          const upstream = e?.statusCode ?? e?.status ?? e?.response?.status;
+          let status = 500;
+          let friendly = msg;
+          if (upstream === 402 || /402|credit|payment/i.test(msg)) {
+            status = 402;
+            friendly =
+              "Lovable AI Credits aufgebraucht. Bitte im Workspace Billing Credits aufladen, dann klappt die KI-Übersetzung wieder.";
+          } else if (upstream === 429 || /429|rate/i.test(msg)) {
+            status = 429;
+            friendly = "Zu viele Anfragen an die KI. Bitte kurz warten und nochmal probieren.";
+          }
+          console.error("ai-translate error:", upstream, msg);
+          return Response.json({ error: friendly }, { status });
         }
       },
     },
